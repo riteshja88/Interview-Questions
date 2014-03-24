@@ -1,0 +1,235 @@
+/*
+ * =====================================================================================
+ *
+ *       Filename:  rainfall.c
+ *
+ *    Description:  Rainfall program for Palantir FTE
+ *
+ *        Version:  1.0
+ *        Created:  03/22/2014 05:39:36 PM
+ *       Revision:  none
+ *       Compiler:  gcc
+ *
+ *         Author:  Ritesh Agarwal (Omi), ragarw8@uic.edu
+ *        Company:  University of Illinois, Chicago
+ *
+ * =====================================================================================
+ */
+
+
+#define MAX_S 1000
+
+
+/* 
+ * ===  FUNCTION  ======================================================================
+ *         Name:  read_input(int **alt_matrix, int s)
+ *  Description:  Reads input from STDIN in the said format
+ * =====================================================================================
+ */
+void read_input(int **alt_matrix, int *s)
+{
+    int i,j;
+    scanf("%u", s);
+    for(i=0; i<s; i++)
+        for(j=0; j<s; j++)
+            scanf("%u",&alt_matrix[i][j]);
+    
+    return ;
+}/* read_input(int **alt_matrix, int s) */
+
+
+/* 
+* ===  FUNCTION  ======================================================================
+*         Name:  find_lowest_alt
+*  Description:  Function simply returns the row and column of the next altitude after row, col specified and modifies the same.
+* =====================================================================================
+*/
+void find_lowest_alt(unsigned int **alt_matrix, int s, int *row, int *col)
+{
+    unsigned int min_alt = -1;
+
+    for(i=0; i<s; i++){
+        for(j=0; j<s; j++) {
+            if(alt_matrix[i][j] <= min_alt) {
+                *row = i; *col = j; min_alt = alt_matrix[i][j];
+            }
+        }
+    }
+    return ;
+}/* find_lowest_alt */
+
+/* 
+* ===  FUNCTION  ======================================================================
+*         Name:  find_next_lowest_unknown_alt
+*  Description:  Function simply returns the row and column of the next altitude after row, col specified and modifies the same.
+* =====================================================================================
+*/
+
+#define END_OF_UNKNOWN_ALTITUDE 2000;
+void find_next_lowest_unknown_alt(unsigned int **alt_matrix, int s, int **sink_flag, int *row, int *col)
+{
+    int i,j;
+    unsigned int current_alt = alt_matrix[*row][*col];
+    unsigned int next_min_alt =-1;
+    for(i=0; i<s; i++){
+        for(j=0; j<s ; j++)
+        {
+            if(sink_flag[i][j] != 0) continue; /* Can be optimized more by including in for loop test condition */
+
+            if(alt_matrix[i][j] >= current_alt && alt_matrix[i][j] <= next_min_alt) {
+                *row = i; *col = j; next_min_alt = alt_matrix[i][j];
+            }
+
+        }
+    }
+    *row = END_OF_UNKNOWN_ALTITUDE
+    return ;
+}/* find_next_lowest_unknown_alt */
+
+
+
+/* 
+ * ===  FUNCTION  ======================================================================
+ *         Name:  is_sink
+ *  Description:  Returns 1 if the specified cell is a sink otherwise returns 0
+ * =====================================================================================
+ */
+int is_sink(unsigned int **alt_matrix, int s, int row, int col)
+{
+    unsigned int cell_value = alt_matrix[row][col];
+
+    if!((row<(s-1) && alt_matrix[row+1][col] > cell_value))
+        return 0;
+
+    if!((row>0 && alt_matrix[row-1][col] > cell_value))
+        return 0;
+
+    if!((col>0 && alt_matrix[row][col-1] > cell_value))
+        return 0;
+
+    if!((col<(s-1) && alt_matrix[row][col+1] > cell_value))
+        return 0;
+
+    if!((row<(s-1) && col<(s-1) && alt_matrix[row+1][col+1] > cell_value))
+        return 0;
+
+    if!((row>0 && col<(s-1) && alt_matrix[row-1][col+1] > cell_value))
+        return 0;
+
+    if!((row<(s-1) && col>0 && alt_matrix[row+1][col-1] > cell_value))
+        return 0;
+
+    if!((row>0 && col>0 && alt_matrix[row-1][col-1] > cell_value))
+        return 0;
+
+    return 1;
+}/* is_sink */
+
+
+/* 
+ * ===  FUNCTION  ======================================================================
+ *         Name:  mark_neighbours_with_zone
+ *  Description:  Will mark neighbours with zone no. specified if it is not already marked.
+ * =====================================================================================
+ */
+void mark_neighbours_with_zone(unsigned int **zone_matrix, int s, int row, int col, int **sink_flags)
+{
+
+    unsigned int zone_value = alt_matrix[row][col];
+    int flag=1;
+
+    if(row<(s-1))
+        if(sink_flags[row+1][col] == 0){
+            alt_matrix[row+1][col] = zone_value;
+            sink_flags[row+1][col] = 2
+        }
+
+    if(row>0)
+        if(sink_flags[row-1][col] == 0){
+            alt_matrix[row-1][col] = zone_value;
+            sink_flags[row-1][col] = 2
+        }
+
+    if(col>0)
+        if(sink_flags[row][col-1] == 0){
+            alt_matrix[row][col-1] = zone_value;
+            sink_flags[row][col-1] = 2
+        }
+
+    if(col<(s-1)) 
+        if(sink_flags[row][col+1] == 0){
+            alt_matrix[row][col+1] = zone_value;
+            sink_flags[row][col+1] = 2
+        }
+
+    if(row<(s-1) && col<(s-1)) 
+        if(sink_flags[row+1][col+1] == 0){
+            alt_matrix[row+1][col+1] = zone_value;
+            sink_flags[row+1][col+1] = 2
+        }
+
+    if(row>0 && col<(s-1))
+        if(sink_flags[row-1][col+1] == 0){
+            alt_matrix[row-1][col+1] = zone_value;
+            sink_flags[row-1][col+1] = 2
+        }
+
+    if(row<(s-1) && col>0)
+        if(sink_flags[row+1][col-1] == 0){
+            alt_matrix[row+1][col-1] = zone_value;
+            sink_flags[row+1][col-1] = 2
+        }
+
+    if(row>0 && col>0)
+        if(sink_flags[row-1][col-1] == 0){
+            alt_matrix[row-1][col-1] = zone_value;
+            sink_flags[row-1][col-1] = 2
+        }
+
+    return ;
+}/* mark_neighbours_with_zone */
+
+/* 
+ * ===  FUNCTION  ======================================================================
+ *         Name:  rainfall_partition
+ *  Description:  Function that returns an array of zone sizes
+ * =====================================================================================
+ */
+void rainfall_partition(int **alt_matrix, int s)
+{
+    int current_zone_no=1;
+    int r=0,c=0;
+
+    unsigned int basin_zone_matrix[MAX_S][MAX_S];
+    memset(basin_zone_matrix, 0, sizeof(basin_zone_matrix)); /* 0 means unknown zone */
+
+    unsigned int sink_flag[MAX_S][MAX_S]; /* 0 : unknown, 1 : sink, 2 : non-sink */
+    memset(sink_flag, 0, sizeof(sink_flag)); 
+    
+    /* First sink */
+    find_lowest_alt(alt_matrix, s, &r, &c);
+    sink_flag[r][c]=1 /*Sink*/;
+    basin_zone_matrix[r][c]=current_zone_no++;
+    mark_neighbours_with_zone(basin_zone_matrix, s, r, c, sink_flag);
+
+    /*Find next lowest and start working on it */
+    do
+    {
+    }while(r!=END_OF_UNKNOWN_ALTITUDE);
+
+
+    
+    return ;
+}/* rainfall_partition */
+
+int main (int argc, char *argv[])
+{
+    int s; /* Dimension of Square Altitude Matrix */
+    unsigned int altitude_matrix[MAX_S][MAX_S];
+
+    read_input(altitude_matrix, &s);
+
+
+
+    return 0;
+}/* main */
