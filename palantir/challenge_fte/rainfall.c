@@ -144,15 +144,9 @@ int is_sink(unsigned int alt_matrix[][MAX_S], unsigned int s, unsigned int row, 
         cnt++;
 
     if(cnt==8) 
-    {
-        printf("%d is sink\n",alt_matrix[row][col]);
         return 1;
-    }
     else
-    {
-        printf("%d is NOT sink\n",alt_matrix[row][col]);
         return 0;
-    }
 }/* is_sink */
 
 
@@ -333,38 +327,6 @@ void rainfall_partition(unsigned int alt_matrix[][MAX_S], unsigned int s, unsign
 
     }while(1);
 
-    {
-        int i,j;
-        for(i=0;i<s;i++){
-            for(j=0;j<s;j++){
-                printf("%4d", alt_matrix[i][j]);
-            }
-            printf("\n");
-        }
-
-    }
-    printf("---------------------------------------------------\n");
-    {
-        int i,j;
-        for(i=0;i<s;i++){
-            for(j=0;j<s;j++){
-                printf("%4d", basin_zone_matrix[i][j]);
-            }
-            printf("\n");
-        }
-
-    }
-    printf("---------------------------------------------------\n");
-    {
-        int i,j;
-        for(i=0;i<s;i++){
-            for(j=0;j<s;j++){
-                printf("%4d", sink_flag[i][j]);
-            }
-            printf("\n");
-        }
-
-    }
     get_zone_counts(basin_zone_matrix, s, zone_cnt);
 
     *arr_size = current_zone_no; 
@@ -389,12 +351,11 @@ int main (int argc, char *argv[])
     
     qsort(zone_cnt_arr, arr_size, sizeof(int), cmp_func);
 
-
-    for(i=0; i<arr_size; i++){
+    for(i=0; i<(arr_size-1); i++){
         printf("%u ", zone_cnt_arr[i]);
     }
+    printf("%u", zone_cnt_arr[i]);
 
-printf("\n");
  
  return 0;
 }/* main */
