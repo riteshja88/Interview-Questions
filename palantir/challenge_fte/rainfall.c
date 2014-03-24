@@ -20,6 +20,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <assert.h>
 
 #define MAX_S 1000
 
@@ -105,33 +106,53 @@ void find_next_lowest_unknown_alt(unsigned int alt_matrix[][MAX_S], unsigned int
  */
 int is_sink(unsigned int alt_matrix[][MAX_S], unsigned int s, unsigned int row, unsigned int col)
 {
+
     unsigned int cell_value = alt_matrix[row][col];
+    int cnt;
 
-    if(!(row<(s-1) && alt_matrix[row+1][col] > cell_value))
+
+    assert(row <= s-1);
+    assert(col <= s-1);
+
+    assert(row >= 0);
+    assert(col >= 0);
+
+    cnt=0;
+
+    if(row>=(s-1) || alt_matrix[row+1][col] > cell_value)
+        cnt++;
+
+    if(row<=0 || alt_matrix[row-1][col] > cell_value)
+        cnt++;
+
+    if(col<=0 || alt_matrix[row][col-1] > cell_value)
+        cnt++;
+
+    if(col>=(s-1) || alt_matrix[row][col+1] > cell_value)
+        cnt++;
+
+    if( (row == (s-1) || col == (s-1)) || alt_matrix[row+1][col+1] > cell_value)
+        cnt++;
+
+    if( (row == 0 || col == (s-1)) || alt_matrix[row-1][col+1] > cell_value)
+        cnt++;
+
+    if( (row == (s-1) || col == 0) || alt_matrix[row+1][col-1] > cell_value)
+        cnt++;
+
+    if( (row == 0 || col == 0) || alt_matrix[row-1][col-1] > cell_value)
+        cnt++;
+
+    if(cnt==8) 
+    {
+        printf("%d is sink\n",alt_matrix[row][col]);
+        return 1;
+    }
+    else
+    {
+        printf("%d is NOT sink\n",alt_matrix[row][col]);
         return 0;
-
-    if(!(row>0 && alt_matrix[row-1][col] > cell_value))
-        return 0;
-
-    if(!(col>0 && alt_matrix[row][col-1] > cell_value))
-        return 0;
-
-    if(!(col<(s-1) && alt_matrix[row][col+1] > cell_value))
-        return 0;
-
-    if(!(row<(s-1) && col<(s-1) && alt_matrix[row+1][col+1] > cell_value))
-        return 0;
-
-    if(!(row>0 && col<(s-1) && alt_matrix[row-1][col+1] > cell_value))
-        return 0;
-
-    if(!(row<(s-1) && col>0 && alt_matrix[row+1][col-1] > cell_value))
-        return 0;
-
-    if(!(row>0 && col>0 && alt_matrix[row-1][col-1] > cell_value))
-        return 0;
-
-    return 1;
+    }
 }/* is_sink */
 
 
@@ -211,35 +232,39 @@ void find_lowest_unique_neighbour(unsigned int alt_matrix[][MAX_S], unsigned int
     unsigned int min_neighbour_value=-1;
 
     if(row<(s-1) && alt_matrix[row+1][col] < min_neighbour_value)
-        *r = row + 1, *c = col;
+        *r = row + 1, *c = col, min_neighbour_value = alt_matrix[row+1][col];
 
     if(row>0 && alt_matrix[row-1][col] < min_neighbour_value)
-        *r = row - 1, *c = col;
+        *r = row - 1, *c = col, min_neighbour_value = alt_matrix[row-1][col];;
 
     if(col>0 && alt_matrix[row][col-1] < min_neighbour_value)
-        *c = col - 1, *r = row;
+        *c = col - 1, *r = row, min_neighbour_value = alt_matrix[row][col-1];;
 
     if(col<(s-1) && alt_matrix[row][col+1] < min_neighbour_value)
-        *c = col + 1, *r = row;
+        *c = col + 1, *r = row, min_neighbour_value = alt_matrix[row][col+1];;
 
     if(row<(s-1) && col<(s-1) && alt_matrix[row+1][col+1] < min_neighbour_value){
         *r = row + 1;
         *c = col + 1;
+        min_neighbour_value = alt_matrix[row+1][col+1];
     }
 
     if(row>0 && col<(s-1) && alt_matrix[row-1][col+1] < min_neighbour_value){
         *r = row - 1;
         *c = col + 1;
+        min_neighbour_value = alt_matrix[row-1][col+1];
     }
 
     if(row<(s-1) && col>0 && alt_matrix[row+1][col-1] < min_neighbour_value){
         *r = row + 1;
         *c = col - 1;
+        min_neighbour_value = alt_matrix[row+1][col-1];
     }
 
     if(row>0 && col>0 && alt_matrix[row-1][col-1] < min_neighbour_value){
         *r = row - 1;
         *c = col - 1;
+        min_neighbour_value = alt_matrix[row-1][col-1];
     }
 }/* find_lowest_unique_neighbour*/
 
@@ -254,9 +279,9 @@ void find_lowest_unique_neighbour(unsigned int alt_matrix[][MAX_S], unsigned int
 void get_zone_counts(unsigned int basin_zone_matrix[][MAX_S], unsigned int s, unsigned int *zone_cnt)
 {
     unsigned int i,j;
-    for(i=0;i<s;i++)
-        for(j=0;j<s;j++)
-            zone_cnt[ basin_zone_matrix[i][j] ]++;
+    for(i=0; i<s; i++)
+        for(j=0; j<s; j++)
+            zone_cnt[ basin_zone_matrix[i][j]-1 ]++;
 
     return ;
 }/* get_zone_counts */
@@ -292,7 +317,7 @@ void rainfall_partition(unsigned int alt_matrix[][MAX_S], unsigned int s, unsign
 
         if(is_sink(alt_matrix, s, r, c)){
             sink_flag[r][c] = 1; /*Sink*/;
-            basin_zone_matrix[r][c] = current_zone_no++;
+            basin_zone_matrix[r][c] = ++current_zone_no;
             mark_neighbours_with_zone(basin_zone_matrix, s, r, c, sink_flag);
         }
         else{
@@ -301,12 +326,45 @@ void rainfall_partition(unsigned int alt_matrix[][MAX_S], unsigned int s, unsign
             col=c;
             sink_flag[r][c] = 2 /*Not-Sink*/;
             find_lowest_unique_neighbour(alt_matrix, s, sink_flag, &row, &col);
+            assert( basin_zone_matrix[row][col] != 0);
             basin_zone_matrix[r][c] = basin_zone_matrix[row][col]; /*Will flow to lowest neighbour alt */
         }
 
 
     }while(1);
 
+    {
+        int i,j;
+        for(i=0;i<s;i++){
+            for(j=0;j<s;j++){
+                printf("%4d", alt_matrix[i][j]);
+            }
+            printf("\n");
+        }
+
+    }
+    printf("---------------------------------------------------\n");
+    {
+        int i,j;
+        for(i=0;i<s;i++){
+            for(j=0;j<s;j++){
+                printf("%4d", basin_zone_matrix[i][j]);
+            }
+            printf("\n");
+        }
+
+    }
+    printf("---------------------------------------------------\n");
+    {
+        int i,j;
+        for(i=0;i<s;i++){
+            for(j=0;j<s;j++){
+                printf("%4d", sink_flag[i][j]);
+            }
+            printf("\n");
+        }
+
+    }
     get_zone_counts(basin_zone_matrix, s, zone_cnt);
 
     *arr_size = current_zone_no; 
@@ -331,9 +389,12 @@ int main (int argc, char *argv[])
     
     qsort(zone_cnt_arr, arr_size, sizeof(int), cmp_func);
 
-    for(i=1; i<=arr_size; i++){
+
+    for(i=0; i<arr_size; i++){
         printf("%u ", zone_cnt_arr[i]);
     }
 
-    return 0;
+printf("\n");
+ 
+ return 0;
 }/* main */
