@@ -27,18 +27,41 @@
 
 /* 
  * ===  FUNCTION  ======================================================================
+ *         Name:  allocate_square_matrix(int s)
+ *  Description:  Allocates a square matrix of size s, all values initialized with 0.
+ * =====================================================================================
+ */
+unsigned int ** allocate_square_matrix(int s)
+{
+    unsigned int **mat;
+    unsigned int i;
+    mat = malloc(s * sizeof(int *));
+    assert(mat!=NULL);
+    for(i=0; i<s; i++){
+        mat[i] = calloc(s, sizeof(int));
+        assert(mat[i]!=NULL);
+    }
+
+    return mat;
+}/* allocate_square_matrix(int s) */
+
+/* 
+ * ===  FUNCTION  ======================================================================
  *         Name:  read_input(int **alt_matrix, int s)
  *  Description:  Reads input from STDIN in the said format
  * =====================================================================================
  */
-void read_input(unsigned int alt_matrix[][MAX_S], int *s)
+void read_input(unsigned int ***alt_matrix_in, int *s)
 {
-    int i,j;
+    unsigned int **alt_matrix = NULL;
+    unsigned int i,j;
     scanf("%u", s);
+    alt_matrix = (unsigned int **)allocate_square_matrix(*s);
     for(i=0; i<*s; i++)
         for(j=0; j<*s; j++)
             scanf("%u",&alt_matrix[i][j]);
-    
+
+    *alt_matrix_in = alt_matrix;
     return ;
 }/* read_input(int **alt_matrix, int s) */
 
@@ -49,7 +72,7 @@ void read_input(unsigned int alt_matrix[][MAX_S], int *s)
 *  Description:  Function simply returns the row and column of the lowest altitude
 * =====================================================================================
 */
-void find_lowest_alt(unsigned int alt_matrix[][MAX_S], unsigned int s, unsigned int *row,unsigned int *col)
+void find_lowest_alt(unsigned int **alt_matrix, unsigned int s, unsigned int *row,unsigned int *col)
 {
     unsigned int min_alt = -1;
     unsigned int i,j;
@@ -73,7 +96,7 @@ void find_lowest_alt(unsigned int alt_matrix[][MAX_S], unsigned int s, unsigned 
 */
 
 #define END_OF_UNKNOWN_ALTITUDE -1
-void find_next_lowest_unknown_alt(unsigned int alt_matrix[][MAX_S], unsigned int s, unsigned int sink_flag[][MAX_S], unsigned int *row, unsigned int *col)
+void find_next_lowest_unknown_alt(unsigned int **alt_matrix, unsigned int s, unsigned int sink_flag[][MAX_S], unsigned int *row, unsigned int *col)
 {
     unsigned int i,j;
     unsigned int current_alt = alt_matrix[*row][*col];
@@ -104,7 +127,7 @@ void find_next_lowest_unknown_alt(unsigned int alt_matrix[][MAX_S], unsigned int
  *  Description:  Returns 1 if the specified cell is a sink otherwise returns 0
  * =====================================================================================
  */
-int is_sink(unsigned int alt_matrix[][MAX_S], unsigned int s, unsigned int row, unsigned int col)
+int is_sink(unsigned int **alt_matrix, unsigned int s, unsigned int row, unsigned int col)
 {
 
     unsigned int cell_value = alt_matrix[row][col];
@@ -220,7 +243,7 @@ void mark_neighbours_with_zone(unsigned int zone_matrix[][MAX_S], unsigned int s
  *  Description:  Returns the position of the lowest unique neighbour
  * =====================================================================================
  */
-void find_lowest_unique_neighbour(unsigned int alt_matrix[][MAX_S], unsigned int s, unsigned int sink_flag[][MAX_S],unsigned int *r,unsigned int *c)
+void find_lowest_unique_neighbour(unsigned int **alt_matrix, unsigned int s, unsigned int sink_flag[][MAX_S],unsigned int *r,unsigned int *c)
 {
     unsigned int row = *r, col =*c;
     unsigned int min_neighbour_value=-1;
@@ -289,7 +312,7 @@ void get_zone_counts(unsigned int basin_zone_matrix[][MAX_S], unsigned int s, un
 
 unsigned int basin_zone_matrix[MAX_S][MAX_S];
 unsigned int sink_flag[MAX_S][MAX_S]; /* 0 : unknown, 1 : sink, 2 : non-sink */
-void rainfall_partition(unsigned int alt_matrix[][MAX_S], unsigned int s, unsigned int *zone_cnt, unsigned int *arr_size)
+void rainfall_partition(unsigned int **alt_matrix, unsigned int s, unsigned int *zone_cnt, unsigned int *arr_size)
 {
     unsigned int current_zone_no=0;
     unsigned int r=0,c=0;
@@ -341,11 +364,11 @@ int cmp_func(const void *a, const void *b)
 int main (int argc, char *argv[])
 {
     unsigned int s,i; /* Dimension of Square Altitude Matrix */
-    unsigned int altitude_matrix[MAX_S][MAX_S];
+    unsigned int **altitude_matrix;
     unsigned int zone_cnt_arr[MAX_S*100], arr_size;
     memset(zone_cnt_arr, 0 , sizeof(zone_cnt_arr));
 
-    read_input(altitude_matrix, &s);
+    read_input(&altitude_matrix, &s);
 
     rainfall_partition(altitude_matrix, s, zone_cnt_arr, &arr_size);
     
