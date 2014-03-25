@@ -22,7 +22,6 @@
 #include <string.h>
 #include <assert.h>
 
-#define MAX_S 1000
 
 
 /* 
@@ -44,6 +43,23 @@ unsigned int ** allocate_square_matrix(int s)
 
     return mat;
 }/* allocate_square_matrix(int s) */
+
+/* 
+ * ===  FUNCTION  ======================================================================
+ *         Name:  deallocate_square_matrix
+ *  Description:  De-allocates a square matrix of size s
+ * =====================================================================================
+ */
+void deallocate_square_matrix(unsigned int **mat, int s)
+{
+    unsigned int i;
+    assert(mat!=NULL);
+    for(i=0; i<s; i++){
+        assert(mat[i]!=NULL);
+        free(mat[i]);
+    }
+    free(mat);
+}/* deallocate_square_matrix */
 
 /* 
  * ===  FUNCTION  ======================================================================
@@ -91,12 +107,13 @@ void find_lowest_alt(unsigned int **alt_matrix, unsigned int s, unsigned int *ro
 /* 
 * ===  FUNCTION  ======================================================================
 *         Name:  find_next_lowest_unknown_alt
-*  Description:  Function simply returns the row and column of the next altitude after row, col specified and modifies the same.
+*  Description:  Function simply returns the row and column of the next lowest altitude 
+*                after row, col specified and modifies the same to indicate the row 
+*                and col of next highest altitude.
 * =====================================================================================
 */
-
-#define END_OF_UNKNOWN_ALTITUDE -1
-void find_next_lowest_unknown_alt(unsigned int **alt_matrix, unsigned int s, unsigned int sink_flag[][MAX_S], unsigned int *row, unsigned int *col)
+#define END_OF_UNKNOWN_ALTITUDE -1 
+void find_next_lowest_unknown_alt(unsigned int **alt_matrix, unsigned int s, unsigned int **sink_flag, unsigned int *row, unsigned int *col)
 {
     unsigned int i,j;
     unsigned int current_alt = alt_matrix[*row][*col];
@@ -179,7 +196,7 @@ int is_sink(unsigned int **alt_matrix, unsigned int s, unsigned int row, unsigne
  *  Description:  Will mark neighbours with zone no. specified if it is not already marked.
  * =====================================================================================
  */
-void mark_neighbours_with_zone(unsigned int zone_matrix[][MAX_S], unsigned int s, unsigned int row, unsigned int col, unsigned int sink_flags[][MAX_S])
+void mark_neighbours_with_zone(unsigned int **zone_matrix, unsigned int s, unsigned int row, unsigned int col, unsigned int **sink_flags)
 {
 
     unsigned int zone_value = zone_matrix[row][col];
@@ -240,10 +257,11 @@ void mark_neighbours_with_zone(unsigned int zone_matrix[][MAX_S], unsigned int s
 /* 
  * ===  FUNCTION  ======================================================================
  *         Name:  find_lowest_unique_neighbour
- *  Description:  Returns the position of the lowest unique neighbour
+ *  Description:  Returns the position of the lowest unique neighbour around \
+ *               the cell indicated by r and c.
  * =====================================================================================
  */
-void find_lowest_unique_neighbour(unsigned int **alt_matrix, unsigned int s, unsigned int sink_flag[][MAX_S],unsigned int *r,unsigned int *c)
+void find_lowest_unique_neighbour(unsigned int **alt_matrix, unsigned int s, unsigned int **sink_flag, unsigned int *r,unsigned int *c)
 {
     unsigned int row = *r, col =*c;
     unsigned int min_neighbour_value=-1;
@@ -290,36 +308,38 @@ void find_lowest_unique_neighbour(unsigned int **alt_matrix, unsigned int s, uns
  * ===  FUNCTION  ======================================================================
  *         Name:  get_zone_counts
  *  Description:  Returns an array with total no. of elements = total no. of zones and 
- *                  each item indicating count of altitutes in the zone
+ *                each item indicating count of altitutes in the zone
  * =====================================================================================
  */
-void get_zone_counts(unsigned int basin_zone_matrix[][MAX_S], unsigned int s, unsigned int *zone_cnt)
+void get_zone_counts(unsigned int **basin_zone_matrix, unsigned int s, unsigned int *zone_cnt)
 {
     unsigned int i,j;
     for(i=0; i<s; i++)
         for(j=0; j<s; j++)
             zone_cnt[ basin_zone_matrix[i][j]-1 ]++;
-
-    return ;
+    return;
 }/* get_zone_counts */
 
 /* 
  * ===  FUNCTION  ======================================================================
  *         Name:  rainfall_partition
- *  Description:  Function that returns an array of zone sizes
+ *  Description:  Function that returns an array of zone sizes in unsorted order.
  * =====================================================================================
  */
 
-unsigned int basin_zone_matrix[MAX_S][MAX_S];
-unsigned int sink_flag[MAX_S][MAX_S]; /* 0 : unknown, 1 : sink, 2 : non-sink */
-void rainfall_partition(unsigned int **alt_matrix, unsigned int s, unsigned int *zone_cnt, unsigned int *arr_size)
+void rainfall_partition(unsigned int **alt_matrix, unsigned int s, unsigned int **zone_cnt_arr, unsigned int *arr_size)
 {
+    unsigned int *zone_cnt;
+    unsigned int **basin_zone_matrix;
+    unsigned int **sink_flag; /* 0 : unknown, 1 : sink, 2 : non-sink */
+
     unsigned int current_zone_no=0;
     unsigned int r=0,c=0;
-    //memset(basin_zone_matrix, 0, sizeof(basin_zone_matrix)); /* 0 means unknown zone */
 
-    memset(sink_flag, 0, sizeof(sink_flag)); 
     
+    basin_zone_matrix = (unsigned int **)allocate_square_matrix(s);
+    sink_flag = (unsigned int **)allocate_square_matrix(s);
+
     /* First sink */
     find_lowest_alt(alt_matrix, s, &r, &c);
     sink_flag[r][c] = 1; /*Sink*/
@@ -350,12 +370,27 @@ void rainfall_partition(unsigned int **alt_matrix, unsigned int s, unsigned int 
 
     }while(1);
 
-    get_zone_counts(basin_zone_matrix, s, zone_cnt);
+    deallocate_square_matrix(alt_matrix, s);
+    deallocate_square_matrix(sink_flag, s);
 
     *arr_size = current_zone_no; 
+    zone_cnt = calloc((*arr_size), sizeof(int));
+    assert(zone_cnt!=NULL);
+    get_zone_counts(basin_zone_matrix, s, zone_cnt);
+    deallocate_square_matrix(basin_zone_matrix, s);
+
+    *zone_cnt_arr = zone_cnt;
+
     return ;
 }/* rainfall_partition */
 
+
+/* 
+ * ===  FUNCTION  ======================================================================
+ *         Name:  cmp_func
+ *  Description:  Comparison function for quicksort()
+ * =====================================================================================
+ */
 int cmp_func(const void *a, const void *b)
 {
        return ( *(int*)b - *(int*)a );
@@ -363,22 +398,22 @@ int cmp_func(const void *a, const void *b)
 
 int main (int argc, char *argv[])
 {
-    unsigned int s,i; /* Dimension of Square Altitude Matrix */
-    unsigned int **altitude_matrix;
-    unsigned int zone_cnt_arr[MAX_S*100], arr_size;
-    memset(zone_cnt_arr, 0 , sizeof(zone_cnt_arr));
+    unsigned int s; /* Dimension of Square Altitude Matrix */
+    unsigned int i;
+    unsigned int **altitude_matrix; /* Altitude matrix read from STDIN */
+    unsigned int *zone_cnt_arr, arr_size; /* zone_cnt_arr for array of zone counts AND arr_size for its size */
 
     read_input(&altitude_matrix, &s);
 
-    rainfall_partition(altitude_matrix, s, zone_cnt_arr, &arr_size);
-    
+    rainfall_partition(altitude_matrix, s, &zone_cnt_arr, &arr_size);
     qsort(zone_cnt_arr, arr_size, sizeof(int), cmp_func);
 
     for(i=0; i<(arr_size-1); i++){
         printf("%u ", zone_cnt_arr[i]);
     }
+
     printf("%u", zone_cnt_arr[i]);
 
- 
+    free(zone_cnt_arr);
  return 0;
 }/* main */
