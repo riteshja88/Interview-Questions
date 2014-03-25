@@ -72,7 +72,7 @@ void find_lowest_alt(unsigned int alt_matrix[][MAX_S], unsigned int s, unsigned 
 * =====================================================================================
 */
 
-#define END_OF_UNKNOWN_ALTITUDE 2000
+#define END_OF_UNKNOWN_ALTITUDE -1
 void find_next_lowest_unknown_alt(unsigned int alt_matrix[][MAX_S], unsigned int s, unsigned int sink_flag[][MAX_S], unsigned int *row, unsigned int *col)
 {
     unsigned int i,j;
@@ -342,7 +342,7 @@ int main (int argc, char *argv[])
 {
     unsigned int s,i; /* Dimension of Square Altitude Matrix */
     unsigned int altitude_matrix[MAX_S][MAX_S];
-    unsigned int zone_cnt_arr[MAX_S], arr_size;
+    unsigned int zone_cnt_arr[MAX_S*100], arr_size;
     memset(zone_cnt_arr, 0 , sizeof(zone_cnt_arr));
 
     read_input(altitude_matrix, &s);
