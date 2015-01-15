@@ -20,7 +20,7 @@
 #include <stdlib.h>
 #include <assert.h>
 
-int sort(int *, int);
+int sort(int [], int);
 
 
 int main (int argc, char *argv[])

@@ -5,8 +5,8 @@ bubble_sort: bubble_sort.c sort.c
 	gcc sort.c $@.lib -o sort.o
 
 quick_sort: quick_sort.c sort.c
-	gcc -c $@.c -o $@.lib
-	gcc sort.c $@.lib -o sort.o
+	gcc -c -g $@.c -o $@.lib
+	gcc -g sort.c $@.lib -o sort.o
 
 select_sort: select_sort.h select_sort.c sort.c
 	gcc -c $@.c -o $@.lib

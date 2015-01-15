@@ -18,19 +18,25 @@
 
 void qsort(int *, int, int);
 
-void sort(int *array, int n)
+void sort(int array[], int n)
 {
-	qsort(array,0,n);
+	qsort(array,0,n-1);
 }
 
-void qsort(int *array, int start, int end)
+void swap(int *x, int *y)
 {
+    int temp;
+    temp = *x;
+    *x = *y;
+    *y = temp;
+}
 
+int partition(int array[], int start, int end)
+{
 	int pivot;
-	int i,j,k;
-	if(end-start<=0) return;
-	i = k = start+1;
-	j= end;
+	int i,j;
+	i = start+1;
+	j = end;
 	pivot = array[start]; //First elment as pivot
     while(1){
     	while(array[i]<=pivot)
@@ -39,18 +45,19 @@ void qsort(int *array, int start, int end)
     		j--;
     	if(i>=j) break;
 
-    	{
-    		int tmp = array[i];
-    		array[i] = array[j];
-    		array[j] = tmp;
-    	}
+        swap(&array[i], &array[j]);
     }
-    {
-        int tmp = array[start];
-        array[start] = array[j];
-        array[j] = tmp;
-    }
-    	qsort(array,start,j-1);
-    	qsort(array,j+1,end);
+    swap(&array[start], &array[j]);
+    return j;
+    
+}
+
+void qsort(int array[], int start, int end)
+{
+
+	if(end-start<=0) return;
+    int v = partition(array, start, end);
+    qsort(array,start,v-1);
+    qsort(array,v+1,end);
 
 }
