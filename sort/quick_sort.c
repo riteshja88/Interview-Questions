@@ -39,7 +39,7 @@ int partition(int array[], int start, int end)
 	j = end;
 	pivot = array[start]; //First elment as pivot
     while(1){
-    	while(array[i]<=pivot)
+    	while(array[i]<=pivot && i<=end)
     		i++;
     	while(array[j]>pivot)
     		j--;
