@@ -20,9 +20,9 @@ insert_sort: insert_sort.c sort.c
 	gcc -c $@.c -o $@.lib
 	gcc sort.c $@.lib -o sort.o
 
-heap_sort: heap_sort.h heap_sort.c sort.c
-	gcc -c $@.c -o $@.lib
-	gcc sort.c $@.lib -o sort.o
+heap_sort: heap_sort.c sort.c
+	gcc -c -g $@.c -o $@.lib
+	gcc -g sort.c -g $@.lib -o sort.o
 
 count_sort: count_sort.h count_sort.c sort.c
 	gcc -c $@.c -o $@.lib
