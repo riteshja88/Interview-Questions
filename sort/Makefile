@@ -1,6 +1,10 @@
 #$@ = name of target
 
-bubble_sort: bubble_sort.h bubble_sort.c sort.c
+bubble_sort: bubble_sort.c sort.c
+	gcc -c $@.c -o $@.lib
+	gcc sort.c $@.lib -o sort.o
+
+quick_sort: quick_sort.c sort.c
 	gcc -c $@.c -o $@.lib
 	gcc sort.c $@.lib -o sort.o
 

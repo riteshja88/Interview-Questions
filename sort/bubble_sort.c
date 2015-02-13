@@ -16,7 +16,7 @@
  * =====================================================================================
  */
 
-void bubble_sort(int *array, int n)
+void sort(int *array, int n)
 {
     int i,j;
     for(i=0; i<n-1; i++){

@@ -18,10 +18,10 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include "bubble_sort.h"
 #include <assert.h>
 
-void (*sort)(int *,int);
+int sort(int *, int);
+
 
 int main (int argc, char *argv[])
 {
@@ -30,14 +30,13 @@ int main (int argc, char *argv[])
     int *array = NULL;
     int i,j;
 
-    sort=bubble_sort;
 
     scanf("%d", &N);
 
     for(i=0; i<N; i++){
         scanf("%d", &n);
 
-        array == NULL;
+        array = NULL;
         array = malloc(n * sizeof(int));
         assert(array != NULL);
 
